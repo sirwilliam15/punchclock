@@ -10,9 +10,10 @@ Uses SquareUp APIs to track employees' time
 
 **Dependencies**
 - PySide2 - Qt libraries for Python
-- SquareUp - Square's API libraries
+- SquareUp - Square's API libraries.
 
 **Notes**
+
 Only Supports:
 - SquareUp Payroll Accounts
 - One location in a Square Payroll Account
