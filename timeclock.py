@@ -1,12 +1,13 @@
 from square.client import Client as squareClient
-from employeeAPI import Employee, ApiRequestError, apiKey
+from employeeAPI import Employee, ApiRequestError
 from datetime import datetime, timezone
 from PySide2.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QPushButton, QLabel, QWidget, QLineEdit
 from PySide2.QtCore import Qt, QSize
 from PySide2.QtGui import QPixmap, QMovie, QFont
-import os, time, threading
+import os, time, threading, json
 
-logo = 'logo.png'
+apiKey = ''
+logo = ''
 
 class InactiveEmployeeError(Exception):
     def __init__(self, message):
@@ -135,7 +136,7 @@ class Timeclock(QWidget):
             self.text.setText('%s%s'%(self._prompts['error'], e))
             return
 
-        _user = Employee(_id, _loc)
+        _user = Employee(_id, _loc, apiKey)
         try:
             _time, _punch_in = _user.punch()
             if _punch_in: self.text.setText(self._prompts['punch_in'] + _time)
@@ -158,11 +159,22 @@ class Timeclock(QWidget):
         self.language.setText(self._prompts['translate'])
 
 
-if __name__ == "__main__":
-    
+def main(config_path):
+
+    config = open(config_path + 'config.json')
+    config = json.loads(config.read())
+
+    global apiKey
+    apiKey = config['apiKey']
+    global logo
+    logo = config['logo']
+
     app = QApplication([])
     window = Timeclock()
     #window.resize(400, 600)
     window.show()
-
     app.exec_()
+
+if __name__ == "__main__":
+    main('./')
+    

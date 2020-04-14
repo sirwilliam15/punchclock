@@ -1,8 +1,6 @@
 from square.client import Client as squareClient
 from datetime import datetime, timezone
 
-apiKey = ''
-
 class ApiRequestError(Exception):
     def __init__(self, message):
         super().__init__(message)
@@ -14,7 +12,7 @@ def CheckRequest(apiResponse):
     else: return apiResponse
 
 class Employee:
-    def __init__(self, employee_id, location):
+    def __init__(self, employee_id, location, apiKey):
         self.location = location
         self.employeeID = employee_id
         self.client = squareClient(access_token=apiKey, environment='production')
