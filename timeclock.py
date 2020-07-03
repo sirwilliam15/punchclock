@@ -120,8 +120,13 @@ class Timeclock(QWidget):
 
     def processEmployee(self):
         try: 
-            _fname = self.fname.text()[0].upper() + self.fname.text()[1:]
-            _lname = self.lname.text()[0].upper() + self.lname.text()[1:]
+            # Formatting First and Last Name
+            _fname = self.fname.text()[0].upper() + self.fname.text()[1:].lower()
+            _lname = self.lname.text()[0].upper() + self.lname.text()[1:].lower()
+            # Clearing Text Fields
+            self.fname.clear()
+            self.lname.clear()
+
             _user = getEmployeeID(_fname, _lname)
             _id = _user['id']
             _loc = _user['location_ids'][0]
