@@ -17,7 +17,7 @@ class EmployeeNotFoundError(Exception):
         super().__init__(message)
 
 Prompts_En = {
-    'startup':'Hello!\nPlease enter your first and last name.',
+    'startup':'Hello!\nPlease enter your employee PIN number.',
     'button':'Punch!',
     'punch_in':'Success! Punched in at: ',
     'punch_out':'Success! Punched out at: ',
@@ -28,7 +28,7 @@ Prompts_En = {
 }
 
 Prompts_Es = {
-    'startup':'Bienvenido!\nPor favor, escribe tu primer nombre y apellido abajo.',
+    'startup':'Bienvenido!\nPor favor, escribe tu numero de empleado.',
     'button':'Punchear!',
     'punch_in':'Perfecto! Entró a las: ',
     'punch_out':'Perfecto! Salió a las: ',
@@ -38,21 +38,20 @@ Prompts_Es = {
     'inactive':'Empleado no activo'
 }
 
-# TODO: Cache Employee IDs and only update on startup of program
-def getEmployeeID(fname, lname, location=None):
+def getEmployeeID(pin):
     _client = squareClient(access_token=apiKey, environment='production')
-    _client = _client.employees
-    if location == None: _employees = _client.list_employees().body['employees']
-    else: _employees = _client.list_employees(location_id=location).body['employees']
-     
+    _client = _client.team
+
+    _employees = _client.search_team_members(body={})
+    _employees = _employees.body['team_members']
     for e in _employees:
-        if e['first_name'] == fname and e['last_name'] == lname:
-            if e['status'] == 'ACTIVE': 
-                location = e['location_ids']
-                employeeID = e['id']
+        try:
+            if e['reference_id'] == str(pin):
                 return e
-            else: raise InactiveEmployeeError('%s, %s'%(lname, fname))
-    raise EmployeeNotFoundError(('%s, %s'%(lname, fname)))
+        except KeyError:
+            pass
+    raise EmployeeNotFoundError('PIN: %s'%str(pin))
+
 
 class Timeclock(QWidget):
     def __init__(self):
@@ -75,16 +74,14 @@ class Timeclock(QWidget):
         self.logo.setPixmap(QPixmap(os.getcwd()+'/%s'%logo))
 
         self.buttons = QHBoxLayout()
-        self.name = QVBoxLayout()
-        self.fname = QLineEdit()
-        self.lname = QLineEdit()
+        self.employee = QVBoxLayout()
+        self.pin = QLineEdit()
 
         # Set widget alignment
         self.logo.setAlignment(Qt.AlignCenter)
         self.text.setAlignment(Qt.AlignCenter)
-        self.name.setAlignment(Qt.AlignCenter)
-        self.fname.setAlignment(Qt.AlignCenter)
-        self.lname.setAlignment(Qt.AlignCenter)
+        self.employee.setAlignment(Qt.AlignCenter)
+        self.pin.setAlignment(Qt.AlignCenter)
 
         # Set Font Size
         self.text.setFont(QFont('Calibri', 14))
@@ -94,19 +91,19 @@ class Timeclock(QWidget):
         self.buttons.addWidget(self.language)
 
         # Create Name layout
-        self.name.addWidget(self.fname)
-        self.name.addWidget(self.lname)
+        self.employee.addWidget(self.pin)
 
         # Set master layout
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.logo)
         self.layout.addWidget(self.text)
-        self.layout.addLayout(self.name)
+        self.layout.addLayout(self.employee)
         self.layout.addLayout(self.buttons)
         self.setLayout(self.layout)
 
         # Set Actions
         self.button.clicked.connect(self.submit)
+        self.pin.returnPressed.connect(self.submit)
         self.language.clicked.connect(self.translate)
     
     def submit(self):
@@ -120,21 +117,17 @@ class Timeclock(QWidget):
 
     def processEmployee(self):
         try: 
-            # Formatting First and Last Name
-            _fname = self.fname.text()[0].upper() + self.fname.text()[1:].lower()
-            _lname = self.lname.text()[0].upper() + self.lname.text()[1:].lower()
-            # Clearing Text Fields
-            self.fname.clear()
-            self.lname.clear()
+            _pin = self.pin.text()
+            self.pin.clear()
 
-            _user = getEmployeeID(_fname, _lname)
+            _user = getEmployeeID(_pin)
             _id = _user['id']
-            _loc = _user['location_ids'][0]
+            _loc = _user['assigned_locations']['location_ids'][0]
         except EmployeeNotFoundError: 
-            self.text.setText('%s: %s, %s'%(self._prompts['not_found'], _lname, _fname))
+            self.text.setText('%s: %s, %s'%(self._prompts['not_found'], _pin))
             return
         except InactiveEmployeeError: 
-            self.text.setText('%s: %s, %s'%(self._prompts['inactive'], _lname, _fname))
+            self.text.setText('%s: %s, %s'%(self._prompts['inactive'], _pin))
             return
         except Exception as e: 
             self.text.setText('%s%s'%(self._prompts['error'], e))
