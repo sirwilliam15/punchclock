@@ -124,10 +124,10 @@ class Timeclock(QWidget):
             _id = _user['id']
             _loc = _user['assigned_locations']['location_ids'][0]
         except EmployeeNotFoundError: 
-            self.text.setText('%s: %s, %s'%(self._prompts['not_found'], _pin))
+            self.text.setText('%s: %s'%(self._prompts['not_found'], _pin))
             return
         except InactiveEmployeeError: 
-            self.text.setText('%s: %s, %s'%(self._prompts['inactive'], _pin))
+            self.text.setText('%s: %s'%(self._prompts['inactive'], _pin))
             return
         except Exception as e: 
             self.text.setText('%s%s'%(self._prompts['error'], e))
