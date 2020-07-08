@@ -51,6 +51,17 @@ class SquareSetup(QWizardPage):
         layout.addLayout(layout2)
         self.setLayout(layout)
 
+class SquareSetupInfo(QWidget):
+    def __init__(self):
+        super().__init__()
+
+class DatabaseSetup(QWizardPage):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+class LocalSetup(QWizardPage):
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
 def main(): 
     if platform == 'linux':
