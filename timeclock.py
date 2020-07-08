@@ -1,10 +1,9 @@
-from square.client import Client as squareClient
-from employeeAPI import Employee, ApiRequestError
 from datetime import datetime, timezone
 from PySide2.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QPushButton, QLabel, QWidget, QLineEdit
 from PySide2.QtCore import Qt, QSize
 from PySide2.QtGui import QPixmap, QMovie, QFont
 import os, time, threading, json
+from employeeAPI import ApiRequestError
 
 apiKey = ''
 logo = ''
@@ -164,8 +163,19 @@ def main(config_path):
     config = open(config_path + 'config.json')
     config = json.loads(config.read())
 
-    global apiKey
-    apiKey = config['apiKey']
+    global Employee
+    if config['service'] == 'Square': #Square Only Actions
+        global squareClient
+        from square.client import Client as squareClient
+        from employeeAPI import Employee
+
+        global apiKey
+        apiKey = config['apiKey']
+    elif config['service'] == 'MySQL':
+        import mysql
+    elif config['service'] == 'PostgreSQL':
+        import psycopg2
+    
     global logo
     logo = config['logo']
 
